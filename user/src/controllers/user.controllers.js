@@ -1,12 +1,12 @@
 const bcrypt = require("bcrypt");
-const jwt = require("json-web-token");
+const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const blacklistTokenModel = require("../models/blacklistToken.model");
 
 const register = async (req, res) => {
 
     try {
-        
+
         const { name, email, password } = req.body;
 
         let isUserAlreadyExists = await userModel.findOne({ email });
@@ -42,7 +42,8 @@ const register = async (req, res) => {
                 _id: user._id,
                 name,
                 email
-            }
+            },
+            token
         });
 
     } catch (error) {
@@ -109,7 +110,7 @@ const logout = async (req, res) => {
 
     try {
         
-        const token = req.cookies.token;
+        const token = req.cookies.token || req.headers.authorization.split(" ")[1];
 
         if(token) {
             await blacklistTokenModel.create({ token });

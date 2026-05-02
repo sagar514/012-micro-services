@@ -1,10 +1,13 @@
-const jwt = require("json-web-token");
+const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const blacklistTokenModel = require("../models/blacklistToken.model");
 
 const useAuth = async (req, res, next) => {
 
-    const token = req.cookies.token;
+    const cookieToken = req.cookies.token;
+    const authHeaderToken = req.headers?.authorization?.split(" ")[1] ?? null;
+
+    const token = cookieToken || authHeaderToken;
 
     if(!token) {
         return res.status(401).json({
@@ -25,7 +28,11 @@ const useAuth = async (req, res, next) => {
 
         const user = await userModel.findOne({ _id: decoded.id });
 
-        req.user = user;
+        req.user = {
+            _id: user._id,
+            email: user.email,
+            name: user.name
+        };
 
         next();
 
