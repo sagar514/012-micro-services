@@ -9,5 +9,6 @@ router.post("/login", captainController.login);
 router.get("/logout", captainController.logout);
 router.get("/profile", authMiddleware.useAuth, captainController.profile);
 router.put("/toggle-availability", authMiddleware.useAuth, captainController.toggleAvailability);
+router.get('/new-ride', authMiddleware.useAuth, captainController.waitForNewRide);
 
 module.exports = router;

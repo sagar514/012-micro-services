@@ -2,6 +2,9 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userModel = require("../models/user.model");
 const blacklistTokenModel = require("../models/blacklistToken.model");
+const { subscribeToQueue } = require("../service/rabbit");
+
+const pendingUserRequests = new Map(); // userId → res
 
 const register = async (req, res) => {
 
@@ -144,4 +147,65 @@ const profile = async (req, res) => {
     }
 }
 
-module.exports = { register, login, logout, profile };
+const acceptedRide = async (req, res) => {
+    const userId = req.user._id.toString();
+
+    let responded = false;
+
+    const handler = (data) => {
+        if (!responded) {
+            responded = true;
+            res.json(data);
+        }
+    };
+
+    pendingUserRequests.set(userId, handler);
+
+    setTimeout(() => {
+        if (!responded) {
+            responded = true;
+            pendingUserRequests.delete(userId);
+            res.status(204).end();
+        }
+    }, 30000);
+};
+
+subscribeToQueue('ride-accepted', async (msg) => {
+    const data = JSON.parse(msg);
+
+    const userId = data.user;
+
+    const handler = pendingUserRequests.get(userId);
+
+    if (handler) {
+        handler(data); // ✅ safe call
+        pendingUserRequests.delete(userId);
+    }
+});
+
+/* const acceptedRide = async (req, res) => {
+
+    const userId = req.user._id.toString();
+
+    pendingUserRequests.set(userId, res);
+
+    // Set timeout for long polling (e.g., 30 seconds)
+    setTimeout(() => {
+        pendingUserRequests.delete(userId);
+        res.status(204).send();
+    }, 30000);
+} */
+
+/* subscribeToQueue('ride-accepted', async (msg) => {    
+
+    const data = JSON.parse(msg);    
+
+    const userRes = pendingUserRequests.get(data.user);
+    
+    if (userRes) {
+        userRes.json(data);
+        pendingUserRequests.delete(data.userId);
+    }
+}); */
+
+module.exports = { register, login, logout, profile, acceptedRide };

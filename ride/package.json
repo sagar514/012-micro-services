@@ -1,8 +1,8 @@
 {
-  "name": "gateway",
+  "name": "ride",
   "version": "1.0.0",
   "description": "",
-  "main": "app.js",
+  "main": "server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -12,8 +12,12 @@
   "type": "commonjs",
   "dependencies": {
     "amqplib": "^1.0.3",
+    "axios": "^1.16.0",
+    "bcrypt": "^6.0.0",
+    "cookie-parser": "^1.4.7",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
-    "express-http-proxy": "^2.1.2"
+    "jsonwebtoken": "^9.0.3",
+    "mongoose": "^9.6.1"
   }
 }

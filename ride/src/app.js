@@ -1,20 +1,17 @@
-const dotenv = require("dotenv");
-dotenv.config();
-
+require("dotenv").config();
 const express = require("express");
 const cookieParser = require("cookie-parser");
-const app = express();
-const userRoutes = require("./routes/user.routes");
-
+const rideRoutes = require("./routes/ride.route");
 const rabbitMQ = require("./service/rabbit");
+
+const app = express();
+
 rabbitMQ.connect();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
-
-app.use("/", userRoutes);
-
+app.use("/", rideRoutes);
 
 module.exports = app;
